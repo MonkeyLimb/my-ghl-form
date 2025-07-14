@@ -582,6 +582,25 @@
                 });
             });
 
+            // Handle Enter Key Press for Navigation
+            form.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    // Prevent the default Enter key action (form submission)
+                    e.preventDefault();
+                    
+                    // Find the currently visible form section
+                    const activeSection = formSections[currentStep];
+                    
+                    // Find the 'next' or 'submit' button within that section
+                    const nextOrSubmitBtn = activeSection.querySelector('.next-btn');
+                    
+                    if (nextOrSubmitBtn) {
+                        // Programmatically click the button
+                        nextOrSubmitBtn.click();
+                    }
+                }
+            });
+
             form.addEventListener('submit', function(e) {
                 e.preventDefault();
                 submitButton.disabled = true;
@@ -592,12 +611,9 @@
 
                 console.log('SUBMITTING TO PROXY VIA BEACON:', dataToSubmit);
 
-                // Use sendBeacon for robust, fire-and-forget submission
                 const successful = navigator.sendBeacon(FORM_SUBMISSION_ENDPOINT, dataBlob);
 
                 if (successful) {
-                    // Since sendBeacon is asynchronous and doesn't return server status,
-                    // we optimistically show success to the user immediately.
                     showNotification('success', 'Submission Sent!', 'Your information is on its way. We will be in touch shortly.');
                     setTimeout(() => {
                         form.reset();
@@ -605,7 +621,7 @@
                         updateFormView();
                         submitButton.disabled = false;
                         submitButton.textContent = 'Submit Form';
-                    }, 1000); // A small delay to let the user see the message
+                    }, 1000); 
                 } else {
                     showNotification('error', 'Submission Failed', 'Your browser could not send the data. Please try again.');
                     submitButton.disabled = false;
