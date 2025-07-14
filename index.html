@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Lead Builder</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: radial-gradient(ellipse at center, white 10%, #F5E6A3 70%, #D5B67A 100%);
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+        .form-section {
+            background-color: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            border: 1px solid #e5e7eb;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .form-section h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgb(37 99 235 / 0.2);
+        }
+        .input-error {
+            border-color: #dc2626; /* red-600 */
+            box-shadow: 0 0 0 3px rgb(220 38 38 / 0.2);
+        }
+        .field-error-message {
+            color: #dc2626;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .checkbox-group {
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            background-color: #f9fafb;
+            display: grid;
+            grid-template-columns: repeat(1, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+        @media (min-width: 640px) {
+            .checkbox-group {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            font-weight: 400;
+            cursor: pointer;
+        }
+        .checkbox-label input {
+            margin-right: 0.75rem;
+            height: 1rem;
+            width: 1rem;
+            accent-color: #2563eb;
+        }
+        
+        /* Icon Progress Bar */
+        .steps-container {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+        }
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+        .step:not(:first-child)::before {
+            content: '';
+            position: absolute;
+            top: 1.25rem;
+            right: 50%;
+            height: 2px;
+            width: 100%;
+            background-color: #d1d5db;
+            z-index: 1;
+            transition: background-color 0.4s ease;
+        }
+        .step-circle {
+            height: 2.5rem;
+            width: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            border: 2px solid #d1d5db;
+            background-color: white;
+            transition: background-color 0.4s ease, border-color 0.4s ease;
+            z-index: 2;
+            position: relative;
+        }
+        .step-circle svg, .step-circle i {
+            height: 1.5rem;
+            width: 1.5rem;
+            color: #9ca3af;
+            transition: color 0.4s ease;
+        }
+        .step-label {
+            margin-top: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #6b7280;
+            text-align: center;
+            transition: color 0.4s ease;
+        }
+
+        /* Step State Colors */
+        .step.completed .step-circle svg { color: white; }
+        .step.completed .step-label { color: #1f2937; }
+        .step.step-gray.active .step-circle { border-color: #6b7280; }
+        .step.step-gray.active .step-circle svg { color: #6b7280; }
+        .step.step-gray.active .step-label { color: #6b7280; font-weight: 600; }
+        .step.step-gray.completed .step-circle { background-color: #6b7280; border-color: #6b7280; }
+        .step.step-gray.completed::before { background-color: #6b7280; }
+        .step.step-blue.active .step-circle { border-color: #2563eb; }
+        .step.step-blue.active .step-circle svg { color: #2563eb; }
+        .step.step-blue.active .step-label { color: #2563eb; font-weight: 600; }
+        .step.step-blue.completed .step-circle { background-color: #2563eb; border-color: #2563eb; }
+        .step.step-blue.completed::before, .step.step-blue.active::before { background-color: #2563eb; }
+        .step.step-green.active .step-circle { border-color: #16a34a; }
+        .step.step-green.active .step-circle svg { color: #16a34a; }
+        .step.step-green.active .step-label { color: #16a34a; font-weight: 600; }
+        .step.step-green.completed .step-circle { background-color: #16a34a; border-color: #16a34a; }
+        .step.step-green.completed::before, .step.step-green.active::before { background-color: #16a34a; }
+        .step.step-orange.active .step-circle { border-color: #ea580c; }
+        .step.step-orange.active .step-circle svg { color: #ea580c; }
+        .step.step-orange.active .step-label { color: #ea580c; font-weight: 600; }
+        .step.step-orange.completed .step-circle { background-color: #ea580c; border-color: #ea580c; }
+        .step.step-orange.completed::before, .step.step-orange.active::before { background-color: #ea580c; }
+        .step.step-yellow.active .step-circle { border-color: #ca8a04; }
+        .step.step-yellow.active .step-circle svg { color: #ca8a04; }
+        .step.step-yellow.active .step-label { color: #ca8a04; font-weight: 600; }
+        .step.step-yellow.completed .step-circle { background-color: #ca8a04; border-color: #ca8a04; }
+        .step.step-yellow.completed::before, .step.step-yellow.active::before { background-color: #ca8a04; }
+        .step.step-red.active .step-circle { border-color: #dc2626; }
+        .step.step-red.active .step-circle svg { color: #dc2626; }
+        .step.step-red.active .step-label { color: #dc2626; font-weight: 600; }
+        .step.step-red.completed .step-circle { background-color: #dc2626; border-color: #dc2626; }
+        .step.step-red.completed::before, .step.step-red.active::before { background-color: #dc2626; }
+
+        /* Navigation Buttons */
+        .navigation-buttons {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+        }
+        .nav-btn {
+             padding: 0.625rem 1.5rem;
+             border: 1px solid transparent;
+             font-size: 0.875rem;
+             font-weight: 500;
+             border-radius: 0.375rem;
+             box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+             cursor: pointer;
+             transition: all 0.2s;
+             display: inline-flex;
+             align-items: center;
+             justify-content: center;
+        }
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .next-btn {
+            background-color: #2563eb;
+            color: white;
+        }
+        .next-btn:hover:not(:disabled) {
+            background-color: #1d4ed8;
+        }
+        .prev-btn {
+            background-color: #e5e7eb;
+            color: #374151;
+            border-color: #d1d5db;
+        }
+        .prev-btn:hover {
+            background-color: #d1d5db;
+        }
+        
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: scale(0.95);
+            transition: transform 0.3s;
+        }
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+        .modal-icon {
+            margin-bottom: 1rem;
+        }
+        .modal-icon svg {
+            height: 3rem;
+            width: 3rem;
+            margin: 0 auto;
+        }
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .modal-text {
+            color: #6b7280;
+            margin-bottom: 1.5rem;
+        }
+        .modal-close-btn {
+            background-color: #2563eb;
+            color: white;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto max-w-4xl p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Please fill the form out all the way through</h1>
+            <p class="mt-2 text-lg text-gray-600">Complete this form so we can get to know who you are and what you do</p>
+        </header>
+
+        <div id="icon-progress-bar" class="steps-container">
+            <div class="step step-gray" data-step="0"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div class="step-label">Start</div></div>
+            <div class="step step-blue" data-step="1"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg></div><div class="step-label">Who Are You?</div></div>
+            <div class="step step-green" data-step="2"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 14.15v4.07a2.25 2.25 0 01-2.25 2.25H5.998a2.25 2.25 0 01-2.25-2.25v-4.07a2.25 2.25 0 01.97-1.732l5.25-3.25a2.25 2.25 0 012.56 0l5.25 3.25a2.25 2.25 0 01.97 1.732z" /><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 9.75V6.22a2.25 2.25 0 00-2.25-2.25H9.75A2.25 2.25 0 007.5 6.22v3.53" /></svg></div><div class="step-label">What You Do</div></div>
+            <div class="step step-orange" data-step="3"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.75A.75.75 0 013 4.5h.75m0 0a.75.75 0 01.75.75v.75m0 0a.75.75 0 01-.75.75h-.75m0 0a.75.75 0 01-.75-.75v-.75m0 0a.75.75 0 01.75-.75h.75M9 12.75l.75-1.036m0 0l.75-1.036m-.75 1.036L9.75 12l-.75.75m.75-1.036l-.75-1.036m0 0l.75-1.036m-.75 1.036l.75.75m6.75-3l.75-1.036m0 0l.75-1.036m-.75 1.036L15.75 12l-.75.75m.75-1.036l-.75-1.036m0 0l.75-1.036m-.75 1.036l.75.75M4.5 6h15M4.5 18h15" /></svg></div><div class="step-label">Budget/Tools</div></div>
+            <div class="step step-yellow" data-step="4"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m.75 12l3 3m0 0l3-3m-3 3v-6m-1.5-9H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg></div><div class="step-label">Lead Gen</div></div>
+            <div class="step step-red" data-step="5"><div class="step-circle"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z" /></svg></div><div class="step-label">Pain Points</div></div>
+        </div>
+
+
+        <form id="strategyForm" novalidate>
+            <section class="form-section">
+                <h2 class="text-gray-800">Welcome! Let's Build Your Strategy</h2>
+                <div class="space-y-4 text-gray-600">
+                    <p>This form is designed to help us understand your business inside and out. The more detail you provide, the better we can tailor a winning strategy for you.</p>
+                    <p>Please go through each step and fill out the fields as accurately as possible. If a question doesn't apply to you or you're unsure, feel free to leave it blank.</p>
+                    <p>Your progress will be saved at each step. Let's get started!</p>
+                </div>
+                <div class="navigation-buttons justify-end"><button type="button" class="nav-btn next-btn">Start Now &rarr;</button></div>
+            </section>
+
+            <section class="form-section hidden">
+                <h2 class="text-blue-600">🟦 Section 1: Who Are You?</h2>
+                <div class="grid-container">
+                    <div><label for="firstName" class="form-label">First Name</label><input type="text" id="firstName" name="first_name" class="form-input" placeholder="e.g., Juan"></div>
+                    <div><label for="lastName" class="form-label">Last Name</label><input type="text" id="lastName" name="last_name" class="form-input" placeholder="e.g., Dela Cruz"></div>
+                    <div>
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" name="email" class="form-input" placeholder="e.g., juan.delacruz@email.com" required>
+                        <div id="email-error" class="field-error-message hidden">Please enter a valid email address.</div>
+                    </div>
+                    <div>
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <div class="flex">
+                            <select id="countryCode" name="country_code" class="form-select w-1/3 rounded-r-none">
+                                <option value="+63">🇵🇭 +63</option>
+                                <option value="+1">🇺🇸 +1</option>
+                                <option value="+44">🇬🇧 +44</option>
+                                <option value="+61">🇦🇺 +61</option>
+                                <option value="+65">🇸🇬 +65</option>
+                            </select>
+                            <input type="tel" id="phone" name="phone" class="form-input rounded-l-none" placeholder="e.g., 9171234567">
+                        </div>
+                    </div>
+                    <div class="md:col-span-2"><label for="businessName" class="form-label">Business Name</label><input type="text" id="businessName" name="business_name" class="form-input" placeholder="e.g., Juan's Coffee Shop"></div>
+                    <div><label for="yearsInBusiness" class="form-label">Years in Business</label><input type="number" id="yearsInBusiness" name="years_in_business" class="form-input" min="0" placeholder="e.g., 3"></div>
+                    <div><label for="teamSize" class="form-label">Team Size</label><select id="teamSize" name="team_size" class="form-select"><option disabled selected value="">-- Select an option --</option><option value="solo">Solo</option><option value="2-5">2–5 employees</option><option value="6-10">6–10 employees</option><option value="11-50">11–50 employees</option><option value="51+">51+ employees</option></select></div>
+                    <div class="md:col-span-2"><label for="businessNiche" class="form-label">Industry / Niche</label><select id="businessNiche" name="business_niche" class="form-select"><option disabled selected value="">-- Select an option --</option><optgroup label="Health & Wellness"><option value="aesthetic_and_beauty_clinics">Aesthetic and Beauty Clinics</option><option value="chiropractor">Chiropractor</option><option value="dental_clinics">Dental Clinics</option><option value="massage_therapy">Massage Therapy</option><option value="med_spa">Med Spa</option><option value="mental_health_counselor">Mental Health Counselor</option><option value="personal_trainer">Personal Trainer</option><option value="physical_therapy">Physical Therapy</option></optgroup><optgroup label="Home & Trade Services"><option value="cleaning_services">Cleaning Services</option><option value="construction_and_engineering">Construction and Engineering Services</option><option value="custom_furniture_woodworks">Custom Furniture and Woodworks</option><option value="electrician">Electrician</option><option value="hvac_services">HVAC Services</option><option value="landscaping">Landscaping</option><option value="painting_services">Painting Services</option><option value="plumbing">Plumbing</option><option value="roofing">Roofing</option></optgroup><optgroup label="Professional & Creative Services"><option value="accounting_bookkeeping">Accounting & Bookkeeping</option><option value="architecture_interior_design">Architecture or Interior Design</option><option value="business_consulting">Business Consulting</option><option value="it_services_support">IT Services & Support</option><option value="law_firm">Law Firm</option><option value="marketing_agency">Marketing Agency</option><option value="photography_studios">Photography Studios</option><option value="web_design_development">Web Design & Development</option></optgroup><optgroup label="Events & Hospitality"><option value="catering_services">Catering Services</option><option value="event_planning">Event Planning</option><option value="resort_accommodation">Resort or Accommodation</option></optgroup><optgroup label="Automotive & Repair"><option value="auto_detailing">Auto Detailing</option><option value="auto_repair_shop">Auto Repair Shop</option></optgroup><optgroup label="Personal Care & Beauty"><option value="barbershop">Barbershop</option><option value="hair_salon">Hair Salon</option><option value="nail_salon">Nail Salon</option></optgroup><optgroup label="Education & Coaching"><option value="business_coaching">Business Coaching</option><option value="life_coaching">Life Coaching</option><option value="tutoring_services">Tutoring Services</option></optgroup><optgroup label="Other Industries"><option value="safety_surveillance">Safety and Surveillance Installation</option><option value="other" data-controls="otherNicheContainer">Other</option></optgroup></select></div>
+                    <div id="otherNicheContainer" class="hidden md:col-span-2"><label for="otherNicheInput" class="form-label">Please specify your niche</label><input type="text" id="otherNicheInput" name="other_niche" class="form-input"></div>
+                    <div class="md:col-span-2"><label for="website" class="form-label">Website URL</label><input type="url" id="website" name="website" class="form-input" placeholder="https://example.com"></div>
+                    <div class="md:col-span-2"><label for="facebookLink" class="form-label">Facebook Page Link</label><div class="flex items-center"><span class="mr-3"><i class="fab fa-facebook text-blue-600 w-6 text-center text-xl"></i></span><input type="url" id="facebookLink" name="facebook_link" class="form-input" placeholder="https://facebook.com/yourpage"></div></div>
+                    <div class="md:col-span-2"><label for="instagramLink" class="form-label">Instagram Profile Link</label><div class="flex items-center"><span class="mr-3"><i class="fab fa-instagram text-pink-600 w-6 text-center text-xl"></i></span><input type="url" id="instagramLink" name="instagram_link" class="form-input" placeholder="https://instagram.com/yourprofile"></div></div>
+                    <div class="md:col-span-2"><label for="linkedinLink" class="form-label">LinkedIn Profile Link</label><div class="flex items-center"><span class="mr-3"><i class="fab fa-linkedin text-blue-700 w-6 text-center text-xl"></i></span><input type="url" id="linkedinLink" name="linkedin_link" class="form-input" placeholder="https://linkedin.com/in/yourprofile"></div></div>
+                </div>
+                <div class="navigation-buttons"><button type="button" class="nav-btn prev-btn">&larr; Previous</button><button type="button" class="nav-btn next-btn">Next &rarr;</button></div>
+            </section>
+
+            <section class="form-section hidden">
+                <h2 class="text-green-600">🟩 Section 2: What You Do?</h2>
+                <div class="grid-container">
+                    <div><label for="businessModel" class="form-label">Business Model</label><select id="businessModel" name="business_model" class="form-select"><option disabled selected value="">-- Select an option --</option><option value="service_based">Service-Based</option><option value="product_based">Product-Based</option><option value="hybrid">Hybrid</option><option value="subscription">Subscription</option><option value="marketplace">Marketplace</option><option value="other" data-controls="otherBusinessModelContainer">Other</option></select></div>
+                    <div id="otherBusinessModelContainer" class="hidden"><label for="otherBusinessModel" class="form-label">Please specify Business Model</label><input type="text" id="otherBusinessModel" name="other_business_model" class="form-input"></div>
+                    <div>
+                        <label for="revenueGoalPercentage" class="form-label">Primary Revenue Goal (Next 12 Months)</label>
+                        <select id="revenueGoalPercentage" name="revenue_goal_percentage" class="form-select">
+                            <option disabled selected value="">-- Select an option --</option>
+                            <option value="10-25%">10% - 25% Increase</option>
+                            <option value="25-50%">25% - 50% Increase</option>
+                            <option value="50-100%">50% - 100% Increase</option>
+                            <option value="100%+">100%+ Increase</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-2"><label for="missionStatement" class="form-label">Mission Statement</label><textarea id="missionStatement" name="mission_statement" class="form-textarea" rows="3" placeholder="e.g., To serve the best coffee in Manila while creating a welcoming community space."></textarea></div>
+                    <div class="md:col-span-2"><label for="usp" class="form-label">Unique Selling Proposition (USP)</label><textarea id="usp" name="usp" class="form-textarea" rows="3" placeholder="e.g., We are the only coffee shop in the area that roasts its own beans daily."></textarea></div>
+                    <div class="md:col-span-2"><label for="targetAudience" class="form-label">Describe your current target audience and any changes you'd like to make.</label><textarea id="targetAudience" name="target_audience" class="form-textarea" rows="3" placeholder="e.g., Currently targeting young professionals, want to expand to students."></textarea></div>
+                    <div class="md:col-span-2"><label for="topPriority" class="form-label">Top Business Priority Right Now</label><select id="topPriority" name="top_priority" class="form-select"><option disabled selected value="">-- Select an option --</option><option value="more_leads">Generating more leads</option><option value="increase_conversions">Increasing sales conversions</option><option value="customer_retention">Improving customer retention</option><option value="streamline_operations">Streamlining operations</option><option value="brand_awareness">Building brand awareness</option><option value="other" data-controls="otherTopPriorityContainer">Other</option></select></div>
+                    <div id="otherTopPriorityContainer" class="hidden md:col-span-2"><label for="otherTopPriority" class="form-label">Please specify Top Priority</label><input type="text" id="otherTopPriority" name="other_top_priority" class="form-input"></div>
+                    <div class="md:col-span-2"><label for="success3to6Months" class="form-label">What does success look like to you in 3-6 months?</label><textarea id="success3to6Months" name="success_3_to_6_months" class="form-textarea" rows="3" placeholder="e.g., Increase daily customers by 20%, launch a new loyalty program, open a second branch..."></textarea></div>
+                </div>
+                <div class="md:col-span-2 mt-6"><h3 class="text-lg font-semibold text-gray-700 mb-4">Products/Services</h3><div id="products-services-container" class="space-y-6"></div><button type="button" id="addProductService" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">+ Add Product/Service</button></div>
+                <div class="navigation-buttons"><button type="button" class="nav-btn prev-btn">&larr; Previous</button><button type="button" class="nav-btn next-btn">Next &rarr;</button></div>
+            </section>
+
+            <section class="form-section hidden">
+                <h2 class="text-orange-600">🟧 Section 3: Budget & Tools</h2>
+                <div class="grid-container">
+                    <div><label for="monthlyRevenue" class="form-label">Average Monthly Revenue</label><select id="monthlyRevenue" name="monthly_revenue" class="form-select"><option disabled selected value="">-- Select an option --</option><option value="<250k_php">&lt;₱250,000</option><option value="250k-500k_php">₱250k - ₱500k</option><option value="500k-1.25m_php">₱500k - ₱1.25M</option><option value="1.25m-2.5m_php">₱1.25M - ₱2.5M</option><option value="2.5m-5m_php">₱2.5M - ₱5M</option><option value="5m+_php">₱5M+</option></select></div>
+                    <div><label for="currentAdSpend" class="form-label">Current Monthly Ad Spend (₱)</label><input type="number" id="currentAdSpend" name="current_ad_spend" class="form-input" placeholder="e.g., 10000" min="0" step="100"></div>
+                    <div><label for="willingToAllocateAds" class="form-label">Willing to Allocate for Ads Monthly (₱)</label><input type="number" id="willingToAllocateAds" name="willing_to_allocate_ads" class="form-input" placeholder="e.g., 25000" min="0" step="100"></div>
+                    <div>
+                        <label for="hasAutomation" class="form-label">Have automation for sales/marketing?</label>
+                        <select id="hasAutomation" name="has_automation" class="form-select">
+                            <option disabled selected value="">-- Select --</option>
+                            <option value="yes" data-controls="automationDescriptionContainer">Yes</option>
+                            <option value="no">No</option>
+                        </select>
+                    </div>
+                    <div id="automationDescriptionContainer" class="hidden md:col-span-2">
+                        <label for="automationDescription" class="form-label">Please describe your automation</label>
+                        <textarea id="automationDescription" name="automation_description" class="form-textarea" rows="3" placeholder="e.g., We use email sequences for new leads and abandoned carts."></textarea>
+                    </div>
+                    <div class="md:col-span-2"><hr class="my-2"></div>
+                    <div><label for="crmTool" class="form-label">CRM Tool</label><input type="text" id="crmTool" name="crm_tool" class="form-input" placeholder="e.g., HubSpot, None"></div>
+                    <div><label for="emailMarketingTool" class="form-label">Email Marketing Tool</label><input type="text" id="emailMarketingTool" name="email_marketing_tool" class="form-input" placeholder="e.g., Mailchimp, None"></div>
+                    <div><label for="bookingTool" class="form-label">Appointment Booking Tool</label><input type="text" id="bookingTool" name="booking_tool" class="form-input" placeholder="e.g., Calendly, None"></div>
+                    <div><label for="messagingTool" class="form-label">Primary Business Messaging Tool</label><input type="text" id="messagingTool" name="messaging_tool" class="form-input" placeholder="e.g., Slack, WhatsApp"></div>
+                    <div class="md:col-span-2"><label for="socialChannels" class="form-label">Social Channels Used for Business</label><input type="text" id="socialChannels" name="social_channels" class="form-input" placeholder="e.g., Facebook, Instagram, LinkedIn"></div>
+                    <div class="md:col-span-2"><label for="otherSalesTools" class="form-label">Other Sales Tools</label><input type="text" id="otherSalesTools" name="other_sales_tools" class="form-input" placeholder="List any other relevant software"></div>
+                </div>
+                <div class="navigation-buttons"><button type="button" class="nav-btn prev-btn">&larr; Previous</button><button type="button" class="nav-btn next-btn">Next &rarr;</button></div>
+            </section>
+
+            <section class="form-section hidden">
+                <h2 class="text-yellow-600">🟨 Section 4: Lead Generation Experience</h2>
+                <div class="grid-container">
+                    <div class="md:col-span-2"><label class="form-label">Primary Lead Sources</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="referrals"> Referrals</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="social_media_organic"> Social Media (Organic)</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="social_media_paid"> Paid Social Media Ads</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="seo"> Search Engine Optimization (SEO)</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="ppc"> Google Ads (PPC)</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="email_marketing"> Email Marketing</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="content_marketing"> Content Marketing/Blog</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="networking"> Networking/Events</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="cold_outreach"> Cold Outreach</label><label class="checkbox-label"><input type="checkbox" name="lead_sources" value="other" data-controls="otherLeadSourceContainer"> Other</label></div><div id="otherLeadSourceContainer" class="hidden mt-4"><label for="otherLeadSource" class="form-label">Please specify Lead Source</label><input type="text" id="otherLeadSource" name="other_lead_source" class="form-input"></div></div>
+                    <div class="md:col-span-2"><label class="form-label">First Contact Channel (How leads reach out)</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="phone"> Phone Call</label><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="email"> Email</label><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="website_form"> Website Form</label><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="social_media_dm"> Social Media DM</label><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="in_person"> In Person</label><label class="checkbox-label"><input type="checkbox" name="first_contact_channel" value="other" data-controls="otherContactChannelContainer"> Other</label></div><div id="otherContactChannelContainer" class="hidden mt-4"><label for="otherContactChannel" class="form-label">Please specify Contact Channel</label><input type="text" id="otherContactChannel" name="other_contact_channel" class="form-input"></div></div>
+                    <div><label for="leadTrackingSystem" class="form-label">Do you have a lead tracking system?</label><select id="leadTrackingSystem" name="lead_tracking_system" class="form-select"><option disabled selected value="">-- Select an option --</option><option value="yes">Yes</option><option value="no">No</option></select></div>
+                    <div><label for="leadTrackingNotes" class="form-label">Lead Tracking Notes</label><input type="text" id="leadTrackingNotes" name="lead_tracking_notes" class="form-input" placeholder="e.g., CRM name, spreadsheet..."></div>
+                    <div class="md:col-span-2"><label class="form-label">Biggest Lead Generation Challenges</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="not_enough_leads"> Not enough leads</label><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="low_quality_leads"> Low-quality leads</label><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="high_cpl"> High cost per lead</label><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="tracking_roi"> Difficulty tracking ROI</label><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="inconsistent_flow"> Inconsistent lead flow</label><label class="checkbox-label"><input type="checkbox" name="lead_gen_challenges" value="no_strategy"> Lack of a clear strategy</label></div></div>
+                    <div class="md:col-span-2"><label class="form-label">Are you interested in additional advertising services?</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" name="ad_services" value="fb_ads"> Facebook Ads</label><label class="checkbox-label"><input type="checkbox" name="ad_services" value="tiktok_ads"> TikTok Ads</label><label class="checkbox-label"><input type="checkbox" name="ad_services" value="google_ads"> Google Ads</label><label class="checkbox-label"><input type="checkbox" name="ad_services" value="youtube_ads"> YouTube Ads</label><label class="checkbox-label"><input type="checkbox" name="ad_services" value="other" data-controls="otherAdServiceContainer"> Other</label></div><div id="otherAdServiceContainer" class="hidden mt-4"><label for="otherAdService" class="form-label">Please specify Ad Service</label><input type="text" id="otherAdService" name="other_ad_service" class="form-input"></div></div>
+                </div>
+                 <div class="navigation-buttons"><button type="button" class="nav-btn prev-btn">&larr; Previous</button><button type="button" class="nav-btn next-btn">Next &rarr;</button></div>
+            </section>
+
+            <section class="form-section hidden">
+                <h2 class="text-red-600">🟥 Section 5: Problems & Pain Points</h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div><label for="biggestFrustration" class="form-label">Biggest Frustration in Your Business Right Now</label><textarea id="biggestFrustration" name="biggest_frustration" class="form-textarea" rows="4"></textarea></div>
+                    <div><label class="form-label">Sales Conversion Challenges</label><div class="checkbox-group"><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="follow_up"> Following up with leads</label><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="closing"> Closing the sale</label><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="objections"> Handling objections</label><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="price_sensitivity"> Price sensitivity</label><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="competition"> Competition</label><label class="checkbox-label"><input type="checkbox" name="sales_conversion_challenges" value="long_sales_cycle"> Long sales cycle</label></div></div>
+                    <div><label for="otherSalesChallenges" class="form-label">Other Sales Challenges</label><textarea id="otherSalesChallenges" name="other_sales_challenges" class="form-textarea" rows="4" placeholder="Describe any other sales-related difficulties."></textarea></div>
+                    <div><label for="operationalPainPoints" class="form-label">Operational Pain Points</label><textarea id="operationalPainPoints" name="operational_pain_points" class="form-textarea" rows="4" placeholder="Describe any bottlenecks or inefficiencies in your day-to-day operations."></textarea></div>
+                    <div><label for="processChange" class="form-label">If you could change one thing about your current process, what would it be?</label><textarea id="processChange" name="process_change" class="form-textarea" rows="4" placeholder="e.g., Automate our lead follow-up sequence."></textarea></div>
+                </div>
+                 <div class="navigation-buttons"><button type="button" class="nav-btn prev-btn">&larr; Previous</button><button type="submit" id="submit-btn" class="nav-btn next-btn">Submit Form</button></div>
+            </section>
+
+        </form>
+    </div>
+
+    <div id="notification-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div id="modal-icon-container" class="modal-icon"></div>
+            <h3 id="modal-title" class="modal-title"></h3>
+            <p id="modal-text" class="modal-text"></p>
+            <button id="modal-close" class="nav-btn modal-close-btn">Close</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- CONFIGURATION ---
+            const FORM_SUBMISSION_ENDPOINT = '/api/submit-form';
+
+            // --- ELEMENT SELECTORS ---
+            const form = document.getElementById('strategyForm');
+            const formSections = document.querySelectorAll('.form-section');
+            const nextButtons = document.querySelectorAll('.next-btn');
+            const prevButtons = document.querySelectorAll('.prev-btn');
+            const submitButton = document.getElementById('submit-btn');
+            const progressSteps = document.querySelectorAll('#icon-progress-bar .step');
+            
+            // Modal Elements
+            const modal = document.getElementById('notification-modal');
+            const modalIconContainer = document.getElementById('modal-icon-container');
+            const modalTitle = document.getElementById('modal-title');
+            const modalText = document.getElementById('modal-text');
+            const modalCloseBtn = document.getElementById('modal-close');
+
+            // --- STATE MANAGEMENT ---
+            let currentStep = 0;
+            const totalSteps = formSections.length;
+            const originalIcons = Array.from(progressSteps).map(step => step.querySelector('.step-circle').innerHTML);
+
+            // --- FUNCTIONS ---
+
+            const updateFormView = () => {
+                formSections.forEach((section, index) => {
+                    section.classList.toggle('hidden', index !== currentStep);
+                });
+
+                const checkmarkSVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>`;
+                progressSteps.forEach((step, index) => {
+                    const circle = step.querySelector('.step-circle');
+                    step.classList.remove('active', 'completed');
+
+                    if (index < currentStep) {
+                        step.classList.add('completed');
+                        circle.innerHTML = checkmarkSVG;
+                    } else if (index === currentStep) {
+                        step.classList.add('active');
+                        circle.innerHTML = originalIcons[index];
+                    } else {
+                        circle.innerHTML = originalIcons[index];
+                    }
+                });
+                 window.scrollTo(0, 0);
+            };
+
+            const validateEmailStep = () => {
+                const emailInput = document.getElementById('email');
+                const emailError = document.getElementById('email-error');
+                if (!emailInput.value || !emailInput.checkValidity()) {
+                    emailInput.classList.add('input-error');
+                    emailError.classList.remove('hidden');
+                    emailInput.focus();
+                    return false;
+                }
+                emailInput.classList.remove('input-error');
+                emailError.classList.add('hidden');
+                return true;
+            };
+            
+            const showNotification = (type, title, message) => {
+                const successIcon = `<svg class="text-green-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                const errorIcon = `<svg class="text-red-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15h.01" /></svg>`;
+
+                modalIconContainer.innerHTML = type === 'success' ? successIcon : errorIcon;
+                modalTitle.textContent = title;
+                modalText.textContent = message;
+                modal.classList.add('visible');
+            };
+
+            const prepareDataForSubmission = () => {
+                const formData = new FormData(form);
+                const data = {};
+
+                for (let [key, value] of formData.entries()) {
+                    if (data[key]) {
+                        if (!Array.isArray(data[key])) {
+                            data[key] = [data[key]];
+                        }
+                        data[key].push(value);
+                    } else {
+                        data[key] = value;
+                    }
+                }
+
+                for (const key in data) {
+                    if (Array.isArray(data[key])) {
+                        data[key] = data[key].join(', ');
+                    }
+                }
+
+                const products = [];
+                const productRows = document.querySelectorAll('#products-services-container > div');
+                productRows.forEach(row => {
+                    const name = row.querySelector('.product-name-input').value;
+                    const description = row.querySelector('.product-desc-input').value;
+                    const price = row.querySelector('.product-price-input').value;
+                    const paymentType = row.querySelector('.product-payment-type-select').value;
+                    if (name) { 
+                        products.push({ name, description, price, paymentType });
+                    }
+                });
+
+                if (products.length > 0) {
+                    data.products_services_list = JSON.stringify(products, null, 2);
+                }
+                
+                data.tags = 'strategy-form-submission';
+
+                return data;
+            };
+
+            // --- EVENT LISTENERS ---
+
+            nextButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    if (currentStep === 1 && !validateEmailStep()) {
+                        return;
+                    }
+
+                    if (currentStep < totalSteps - 1) {
+                        currentStep++;
+                        updateFormView();
+                    }
+                });
+            });
+
+            prevButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (currentStep > 0) {
+                        currentStep--;
+                        updateFormView();
+                    }
+                });
+            });
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                submitButton.disabled = true;
+                submitButton.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
+                
+                const dataToSubmit = prepareDataForSubmission();
+                console.log('SUBMITTING TO PROXY:', JSON.stringify(dataToSubmit, null, 2));
+
+                try {
+                    const response = await fetch(FORM_SUBMISSION_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(dataToSubmit),
+                    });
+
+                    if (response.ok) {
+                        showNotification('success', 'Submission Successful!', 'Your information has been sent. We will be in touch shortly.');
+                        form.reset();
+                        currentStep = 0;
+                        updateFormView();
+                    } else {
+                        const errorText = await response.text();
+                        console.error('Submission Error Response:', errorText);
+                        showNotification('error', 'Submission Failed', `The server responded with an error. Please try again. (Status: ${response.status})`);
+                    }
+                } catch (error) {
+                    console.error('Fetch Error:', error);
+                    showNotification('error', 'Network Error', 'Could not connect to the server. Please check your internet connection and try again.');
+                } finally {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Submit Form';
+                }
+            });
+
+            // Conditional "Other" Fields Logic
+            form.addEventListener('change', function(e) {
+                const element = e.target;
+                let controlsId = null;
+
+                if (element.tagName === 'SELECT') {
+                    const selectedOption = element.options[element.selectedIndex];
+                    controlsId = selectedOption.dataset.controls;
+                } else if (element.type === 'checkbox') {
+                    controlsId = element.dataset.controls;
+                }
+                
+                if(controlsId){
+                    const targetContainer = document.getElementById(controlsId);
+                    if (targetContainer) {
+                        let shouldShow = (element.tagName === 'SELECT') ? (element.value === 'yes' || element.value === 'other') : element.checked;
+                        targetContainer.classList.toggle('hidden', !shouldShow);
+                    }
+                }
+            });
+
+            // Repeating Products/Services Block Logic
+            const addProductServiceBtn = document.getElementById('addProductService');
+            const productsContainer = document.getElementById('products-services-container');
+            let serviceIndex = 0;
+
+            const addServiceRow = () => {
+                serviceIndex++;
+                const serviceRow = document.createElement('div');
+                serviceRow.className = 'p-4 border border-gray-200 rounded-lg relative bg-gray-50';
+                serviceRow.setAttribute('data-index', serviceIndex);
+                
+                serviceRow.innerHTML = `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2"><label for="productName-${serviceIndex}" class="form-label text-sm">Product/Service Name</label><input type="text" id="productName-${serviceIndex}" class="form-input product-name-input"></div>
+                        <div class="md:col-span-2"><label for="productDesc-${serviceIndex}" class="form-label text-sm">Product/Service Description</label><textarea id="productDesc-${serviceIndex}" class="form-textarea product-desc-input" rows="2"></textarea></div>
+                        <div><label for="productPrice-${serviceIndex}" class="form-label text-sm">Price</label><input type="text" id="productPrice-${serviceIndex}" class="form-input product-price-input" placeholder="e.g., ₱25,000 or ₱5,000/mo"></div>
+                        <div><label for="paymentType-${serviceIndex}" class="form-label text-sm">Payment Type</label><select id="paymentType-${serviceIndex}" class="form-select product-payment-type-select"><option value="one_time">One-time</option><option value="recurring">Recurring (Subscription)</option><option value="per_project">Per Project</option><option value="hourly">Hourly</option></select></div>
+                    </div>
+                    <button type="button" class="remove-service-btn absolute top-2 right-2 text-gray-400 hover:text-red-500" title="Remove item"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></button>
+                `;
+                productsContainer.appendChild(serviceRow);
+            };
+
+            addProductServiceBtn.addEventListener('click', addServiceRow);
+            productsContainer.addEventListener('click', (e) => {
+                const removeBtn = e.target.closest('.remove-service-btn');
+                if (removeBtn) {
+                    removeBtn.closest('.p-4').remove();
+                }
+            });
+            
+            // Modal Close Functionality
+            modalCloseBtn.addEventListener('click', () => modal.classList.remove('visible'));
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('visible');
+                }
+            });
+
+            // --- INITIALIZATION ---
+            updateFormView(); // Set the initial view to the first step
+            addServiceRow();  // Add the first product/service row by default
+        });
+    </script>
+
+</body>
+</html>
